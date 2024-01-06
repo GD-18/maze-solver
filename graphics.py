@@ -41,7 +41,7 @@ class Line :
         canvas.pack(fill=BOTH,expand=1)
 
 class Cell :
-    def __init__(self,win:Window):
+    def __init__(self,win = None):
         self.has_left_wall = True
         self.has_right_wall = True
         self.has_top_wall = True
@@ -52,6 +52,9 @@ class Cell :
         self._y2 = None 
         self. _win = win
     def draw(self,x1,y1,x2,y2):
+        if self._win is None :
+            return 
+        
         self._x1 = x1
         self._x2 = x2
         self._y1 = y1
@@ -69,3 +72,49 @@ class Cell :
             line = Line(Point(x1,y1),Point(x2,y1))
             self._win.draw_line(line,fill_color="black")
 
+    def draw_move(self,to_cell,undo = False ):
+        if self._win is None : return 
+
+        # find the center of current cell
+        cx = (self._x1+self._x2)/2
+        cy = (self._y1+self._y2)/2
+
+        # find the center of the destination cell
+        dx = (to_cell._x1 +to_cell._x2)/2
+        dy = (to_cell._y1 + to_cell._y2)/2
+        
+        color = "gray" if undo else "red"
+        
+        #left 
+        if self._x1 > to_cell._x1:
+            line = Line(Point(cx,cy),Point(self._x1,cy))
+            self._win.draw_line(line,fill_color=color)
+
+            line =  Line(Point(dx,dy) , Point(to_cell._x2,dy))
+            self._win.draw_line(line,fill_color=color)
+        
+        #right
+        if self._x1 < to_cell._x1:
+            line = Line(Point(self._x2,cy),Point(cx ,cy))
+            self._win.draw_line(line,fill_color=color)
+
+            line = Line(Point(dx,dy),Point(to_cell._x1,dy))
+            self._win.draw_line(line,fill_color=color)
+
+        #top 
+        if self._y1 > to_cell._y1:
+            line = Line(Point(cx,cy),Point(cx,self._y1))
+            self._win.draw_line(line,fill_color=color)
+
+            line = Line(Point(dx,dy),Point(dx,to_cell._y2))
+            self._win.draw_line(line,fill_color=color)
+
+        #bot 
+        if self._y1 < to_cell._y1:
+            line = Line(Point(cx,cy),Point(cx,self._y2))
+            self._win.draw_line(line,fill_color=color)
+
+            line = Line(Point(dx,dy),Point(dx,to_cell._y1))
+            self._win.draw_line(line,fill_color=color)
+
+            
