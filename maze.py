@@ -28,6 +28,7 @@ class Maze:
         self._create_cells()
         self._break_entrance_and_exit()
         self._break_walls_r(0,0)
+        self._reset_visited()
 
     def _create_cells(self):
         for i in range(self._num_cols):
@@ -56,7 +57,7 @@ class Maze:
         time.sleep(0.05)
 
     def _break_entrance_and_exit(self):
-        if self._win is None or len(self._cells) == 0:
+        if len(self._cells) == 0:
             return 
         entry : Cell = self._cells[0][0]
         dest : Cell = self._cells[self._num_cols-1][self._num_rows-1]
@@ -70,6 +71,9 @@ class Maze:
         return i < 0 or j < 0 or i >= self._num_cols or j >= self._num_rows
     
     def _break_walls_r(self,i,j):
+        if len(self._cells) == 0 : 
+            return 
+        
         cur_cell : Cell = self._cells[i][j]
         cur_cell._visited = True
 
@@ -114,7 +118,13 @@ class Maze:
                 self._cells[next_dir[0]][next_dir[1]].has_bot_wall = False
 
             self._break_walls_r(next_dir[0],next_dir[1])
-                    
+
+    def _reset_visited(self):
+        if self._win is None or len(self._cells) == 0:
+            return  
+        for col in self._cells:
+            for cell in col :
+                cell._visited = False
 
 
 
