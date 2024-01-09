@@ -120,11 +120,39 @@ class Maze:
             self._break_walls_r(next_dir[0],next_dir[1])
 
     def _reset_visited(self):
-        if self._win is None or len(self._cells) == 0:
-            return  
         for col in self._cells:
             for cell in col :
                 cell._visited = False
+    
+    def solve(self):
+        return self._solve_r(0,0)
 
+    def _solve_r(self,i,j):
+        self._animate()
+        self._cells[i][j]._visited = True
 
+        if i == self._num_cols-1 and j == self._num_rows-1 :
+            return True
+        
+        direct = [(0, 1), (1, 0), (-1, 0), (0, -1)]  # directions: down, right, left, up
+
+        
+        for d in range(len(direct)):
+            next_i, next_j = i + direct[d][0], j + direct[d][1]
+            wall_conditions = [
+                not self._cells[i][j].has_bot_wall,
+                not self._cells[i][j].has_right_wall,
+                not self._cells[i][j].has_left_wall,
+                not self._cells[i][j].has_top_wall
+            ]
+
+            if not self._out_bounds(next_i, next_j) and not self._cells[next_i][next_j]._visited and wall_conditions[d]:
+                self._cells[i][j].draw_move(self._cells[next_i][next_j])
+                if self._solve_r(next_i, next_j):
+                    return True 
+                else :
+                    self._cells[i][j].draw_move(self._cells[next_i][next_j],True)
+        
+        return False 
+                    
 
