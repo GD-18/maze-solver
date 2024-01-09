@@ -13,6 +13,7 @@ class Maze:
         cell_size_x,
         cell_size_y,
         win = None,
+        seed =None,
     ):
         self._cells = []
         self._x1 = x1
@@ -22,8 +23,11 @@ class Maze:
         self._cell_size_x = cell_size_x
         self._cell_size_y = cell_size_y
         self._win = win
-
+        if seed:
+            random.seed(seed)
         self._create_cells()
+        self._break_entrance_and_exit()
+        self._break_walls_r(0,0)
 
     def _create_cells(self):
         for i in range(self._num_cols):
@@ -50,3 +54,67 @@ class Maze:
             return
         self._win.redraw()
         time.sleep(0.05)
+
+    def _break_entrance_and_exit(self):
+        if self._win is None or len(self._cells) == 0:
+            return 
+        entry : Cell = self._cells[0][0]
+        dest : Cell = self._cells[self._num_cols-1][self._num_rows-1]
+        
+        entry.has_top_wall = False
+        self._draw_cell(0,0)
+        dest.has_bot_wall = False
+        self._draw_cell(self._num_cols-1,self._num_rows-1)
+    
+    def _out_bounds(self,i,j):
+        return i < 0 or j < 0 or i >= self._num_cols or j >= self._num_rows
+    
+    def _break_walls_r(self,i,j):
+        cur_cell : Cell = self._cells[i][j]
+        cur_cell._visited = True
+
+        while True :
+            to_visit = []
+            direct = [(0,1),(1,0),(-1,0),(0,-1)] # down,right,left,up
+
+            #check all directions and see if inbound and notvisited
+            for d in range(len(direct)):
+                new_i,new_j = i+direct[d][0],j+direct[d][1]
+                if not self._out_bounds(new_i,new_j) and not self._cells[new_i][new_j]._visited:
+                    to_visit.append((new_i,new_j))
+            
+            #no where to go
+            if len(to_visit) == 0 :
+                self._draw_cell(i,j)
+                return 
+            
+            #random next dir 
+            idx = random.randrange(len(to_visit))
+            next_dir = to_visit[idx]
+
+            #break walls between current and next to visit cell 
+            #down
+            if next_dir[1] == j+1 :
+                self._cells[i][j].has_bot_wall = False
+                self._cells[next_dir[0]][next_dir[1]].has_top_wall = False
+            
+            #right 
+            if next_dir[0] == i+1 :
+                self._cells[i][j].has_right_wall = False
+                self._cells[next_dir[0]][next_dir[1]].has_left_wall = False
+
+            #left 
+            if next_dir[0] == i-1:
+                self._cells[i][j].has_left_wall = False
+                self._cells[next_dir[0]][next_dir[1]].has_right_wall = False
+
+            #up 
+            if next_dir[1] == j-1:
+                self._cells[i][j].has_top_wall = False
+                self._cells[next_dir[0]][next_dir[1]].has_bot_wall = False
+
+            self._break_walls_r(next_dir[0],next_dir[1])
+                    
+
+
+
